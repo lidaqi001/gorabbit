@@ -260,9 +260,13 @@ func (r *rabbitMQConn) Consume(queue, key string, headers amqp.Table, qArgs amqp
 		return nil, nil, err
 	}
 
-	// if kind equal 'fanout' , queue name equal [exchange name] + [uuid]
+	// if kind equal 'fanout' and queue name is empty,
+	// then queue name equal [exchange name] + [uuid]
 	if r.exchange.Kind == amqp.ExchangeFanout {
-		queue = fmt.Sprint(r.exchange.Name, ":", queue, ":", r.Channel.uuid)
+		if queue == "" {
+			queue = r.Channel.uuid
+		}
+		queue = fmt.Sprint("fanout:", r.exchange.Name, ":", queue)
 	}
 
 	if durableQueue {
